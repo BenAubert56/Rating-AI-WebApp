@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comments</title>
-    <link rel="stylesheet" href="../static/css/style.css">
 </head>
 <body>
     <h1>Comments for {{ item.name }}</h1>
@@ -13,6 +12,10 @@
             <li>{{ comment.content }} - by User {{ comment.user_id }}</li>
         {% endfor %}
     </ul>
+    <form action="{{ url_for('view_comments', item_type=item_type, item_id=item.id) }}" method="POST">
+        <textarea name="content" placeholder="Leave a comment" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
     <a href="{{ url_for('index') }}">Back to Products and Services</a>
 </body>
 </html>

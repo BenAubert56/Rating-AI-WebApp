@@ -12,10 +12,6 @@
         {% for product in products %}
             <li>
                 {{ product.name }} - ${{ product.price }}
-                <form action="{{ url_for('add_comment', item_type='product', item_id=product.id) }}" method="POST">
-                    <textarea name="content" placeholder="Leave a comment" required></textarea>
-                    <button type="submit">Submit</button>
-                </form>
                 <a href="{{ url_for('view_comments', item_type='product', item_id=product.id) }}">View Comments</a>
             </li>
         {% endfor %}
@@ -26,10 +22,6 @@
         {% for service in services %}
             <li>
                 {{ service.name }} - ${{ service.price }}
-                <form action="{{ url_for('add_comment', item_type='service', item_id=service.id) }}" method="POST">
-                    <textarea name="content" placeholder="Leave a comment" required></textarea>
-                    <button type="submit">Submit</button>
-                </form>
                 <a href="{{ url_for('view_comments', item_type='service', item_id=service.id) }}">View Comments</a>
             </li>
         {% endfor %}
@@ -38,9 +30,5 @@
     {% if is_admin %}
         <button onclick="location.href='/add_product'">Add Product</button>
     {% endif %}
-
-    <div>
-        <button id="buttonLogout" class="btn" onclick="location.href='/logout'" type="button">Logout</button>
-    </div>
 </body>
 </html>
