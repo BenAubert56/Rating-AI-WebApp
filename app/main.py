@@ -167,12 +167,29 @@ def add_product():
     
     return render_template('add_products.html')
 
-@app.route('/view_comments/<item_type>/<int:item_id>')
+@app.route('/view_comments/<item_type>/<int:item_id>', methods=['GET', 'POST'])
 def view_comments(item_type, item_id):
+    user_id = session.get('user_id')
+    current_user = User.query.filter(
+            User.id == user_id
+    ).first()
+
     if item_type == 'product':
         item = Product.query.get_or_404(item_id)
         comments = Comment.query.filter_by(product_id=item_id).all()
     elif item_type == 'service':
         item = Service.query.get_or_404(item_id)
         comments = Comment.query.filter_by(service_id=item_id).all()
+
+    if request.method == 'POST':
+        content = request.form['content']
+        user_id = current_user.id  # Utilisateur connecté
+        if item_type == 'product':
+            comment = Comment(content=content, user_id=user_id, product_id=item_id)
+        elif item_type == 'service':
+            comment = Comment(content=content, user_id=user_id, service_id=item_id)
+        db.session.add(comment)
+        db.session.commit()
+        return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
+
     return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
