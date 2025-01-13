@@ -159,12 +159,16 @@ def view_comments(item_type, item_id):
 
     if request.method == 'POST':
         content = request.form['content']
-        new_comment = Comment(content=content, user_id=user_id, product_id=item_id if item_type == 'product' else None, service_id=item_id if item_type == 'service' else None)
-        db.session.add(new_comment)
+        user_id = current_user.id  # Utilisateur connecté
+        if item_type == 'product':
+            comment = Comment(content=content, user_id=user_id, product_id=item_id)
+        elif item_type == 'service':
+            comment = Comment(content=content, user_id=user_id, service_id=item_id)
+        db.session.add(comment)
         db.session.commit()
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
 
-    return render_template('view_comments.html', item=item, comments=comments, current_user=current_user)
+    return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
 
 @app.route('/add_item/<item_type>', methods=['GET', 'POST'])
 @session_login_required
