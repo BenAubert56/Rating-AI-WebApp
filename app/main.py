@@ -5,6 +5,8 @@ from app import app, db, bcrypt, login_manager
 from app.models import Product, User, Comment, Service, Role
 from functools import wraps
 
+ADMIN = "Admin"
+
 @app.before_request
 def create_tables():
     db.create_all()
@@ -121,7 +123,7 @@ def index():
         role = Role.query.filter(
             Role.id == current_user.role_id
         ).first()
-        is_admin = role.name == 'admin' 
+        is_admin = role.name == ADMIN
         products = Product.query.all()
         services = Service.query.all()
         return render_template('index.html', products=products, services=services, is_admin=is_admin)
@@ -171,7 +173,7 @@ def add_item(item_type):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
         return redirect(url_for('products_services'))
     
@@ -196,7 +198,7 @@ def edit_item(item_type, item_id):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
@@ -221,7 +223,7 @@ def delete_item(item_type, item_id):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
