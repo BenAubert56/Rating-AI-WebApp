@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - Erreur Interne du Serveur</title>
+    <title>Access Denied</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -38,20 +39,10 @@
     </style>
 </head>
 <body>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="alert-container">
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-    <div class="container">
-        <h1>500</h1>
-        <p>Oups, quelque chose a mal tourné sur notre serveur.</p>
-        <p>Nous avons été notifiés de l'incident et nous allons l'examiner.</p>
-        <p><a href="{{ url_for('index') }}">Retour à la page d'accueil</a></p>
+    <div class="container text-center">
+        <h1 class="display-1">Access Denied</h1>
+        <p class="lead">You do not have permission to access this page.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Return to Home</a>
     </div>
 </body>
 </html>
