@@ -9,7 +9,14 @@
     <h1>Comments for {{ item.name }}</h1>
     <ul>
         {% for comment, user in comments %}
-            <li>{{ comment.content }} - by {{ user.username }}</li>
+            <li>
+                {{ comment.content }} - by {{ user.username }}
+                <span class="rating">
+                    {% for _ in range(comment.rating) %}
+                        ⭐
+                    {% endfor %}
+                </span>
+            </li>
         {% endfor %}
     </ul>
     <form action="{{ url_for('view_comments', item_type=item_type, item_id=item.id) }}" method="POST">
