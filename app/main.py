@@ -178,7 +178,7 @@ def add_item(item_type):
     ).first()
     if current_user.role.name != 'admin':
         flash('You do not have permission to access this page.')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index  '))
     
     if request.method == 'POST':
         name = request.form['name']
@@ -190,7 +190,7 @@ def add_item(item_type):
         db.session.add(item)
         db.session.commit()
         flash(f'{item_type.capitalize()} added successfully!')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index'))
     
     return render_template('add_item.html', item_type=item_type)
 
@@ -227,7 +227,7 @@ def delete_item(item_type, item_id):
             User.id == user_id
     ).first()
     if current_user.role.name != 'admin':
-        flash('You do not have permission to access this page.')
+        flash('You do not have permission to access this page.', "danger")
         return redirect(url_for('index'))
     
     if item_type == 'product':
@@ -237,5 +237,5 @@ def delete_item(item_type, item_id):
     
     db.session.delete(item)
     db.session.commit()
-    flash(f'{item_type.capitalize()} deleted successfully!')
+    flash(f'{item_type.capitalize()} deleted successfully!', "success")
     return redirect(url_for('index'))
