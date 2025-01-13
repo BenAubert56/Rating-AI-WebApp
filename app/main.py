@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import jsonify, render_template, request, redirect, url_for, flash, session
 from sqlalchemy import and_, asc, or_
 from app import app, db, bcrypt, login_manager
-from app.models import Product, User, Comment
+from app.models import Product, User, Comment, Service
 from functools import wraps
 
 @app.before_request
@@ -106,3 +106,23 @@ def index():
     else:
         return redirect(url_for('login'))
 
+
+@app.route('/products_services')
+@session_login_required
+def products_services():
+    products = Product.query.all()
+    services = Service.query.all()
+    return render_template('products_services.html', products=products, services=services)
+
+@app.route('/add_comment/<item_type>/<int:item_id>', methods=['POST'])
+@session_login_required
+def add_comment(item_type, item_id):
+    content = request.form['content']
+    user_id = 1  # Remplacez par l'ID de l'utilisateur connecté
+    if item_type == 'product':
+        comment = Comment(content=content, user_id=user_id, product_id=item_id)
+    elif item_type == 'service':
+        comment = Comment(content=content, user_id=user_id, service_id=item_id)
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('products_services'))

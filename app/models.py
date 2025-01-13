@@ -23,6 +23,15 @@ class Product(db.Model):
 
     def __repr__(self):
         return f'<Product {self.name}>'
+    
+class Service(db.Model):
+    __tablename__ = 'services'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), unique=True, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+    def __repr__(self):
+        return f"Service('{self.name}', '{self.price}')"
 
 # Modèle pour les commentaires
 class Comment(db.Model):
@@ -31,8 +40,9 @@ class Comment(db.Model):
     content = db.Column(db.Text, nullable=False)
 
     # Clés étrangères
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=True)
 
     def __repr__(self):
         return f'<Comment {self.content[:20]}...>'
