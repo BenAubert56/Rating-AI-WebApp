@@ -24,10 +24,12 @@
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password"  placeholder="Confirm your password" required>
                 </div>
                 <div class="mb-3">
+
                     <label for="role" class="form-label">Role</label>
                     <select class="form-control" id="role" name="role" required>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        {% for r in roles %}
+                            <option value="{{ r }}">{{ r|capitalize }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Register</button>

@@ -37,6 +37,8 @@ def internal_error(error):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    roles = Role.query.all()  # Récupérer tous les rôles depuis la base de données
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -74,7 +76,7 @@ def register():
         flash('Account created successfully! You can now log in.', 'success')
         return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('register.html', roles=[role.name for role in roles])
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
