@@ -25,6 +25,7 @@
                     <textarea name="content" placeholder="Leave a comment" required></textarea>
                     <button type="submit">Submit</button>
                 </form>
+                <a href="{{ url_for('view_comments', item_type='product', item_id=product.id) }}">View Comments</a>
             </li>
         {% endfor %}
     </ul>
@@ -38,6 +39,7 @@
                     <textarea name="content" placeholder="Leave a comment" required></textarea>
                     <button type="submit">Submit</button>
                 </form>
+                <a href="{{ url_for('view_comments', item_type='service', item_id=service.id) }}">View Comments</a>
             </li>
         {% endfor %}
     </ul>

@@ -166,3 +166,13 @@ def add_product():
         return redirect(url_for('index'))
     
     return render_template('add_products.html')
+
+@app.route('/view_comments/<item_type>/<int:item_id>')
+def view_comments(item_type, item_id):
+    if item_type == 'product':
+        item = Product.query.get_or_404(item_id)
+        comments = Comment.query.filter_by(product_id=item_id).all()
+    elif item_type == 'service':
+        item = Service.query.get_or_404(item_id)
+        comments = Comment.query.filter_by(service_id=item_id).all()
+    return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
