@@ -150,15 +150,19 @@ def view_comments(item_type, item_id):
 
     if item_type == 'product':
         item = Product.query.get_or_404(item_id)
-        comments = db.session.query(Comment, User).join(User, Comment.user_id == User.id).filter(Comment.product_id == item_id).all()
+        comments = Comment.query.filter_by(product_id=item_id).all()
     elif item_type == 'service':
         item = Service.query.get_or_404(item_id)
-        comments = db.session.query(Comment, User).join(User, Comment.user_id == User.id).filter(Comment.service_id == item_id).all()
+        comments = Comment.query.filter_by(service_id=item_id).all()
 
     if request.method == 'POST':
         content = request.form['content']
-        new_comment = Comment(content=content, user_id=user_id, product_id=item_id if item_type == 'product' else None, service_id=item_id if item_type == 'service' else None)
-        db.session.add(new_comment)
+        user_id = current_user.id  # Utilisateur connecté
+        if item_type == 'product':
+            comment = Comment(content=content, user_id=user_id, product_id=item_id)
+        elif item_type == 'service':
+            comment = Comment(content=content, user_id=user_id, service_id=item_id)
+        db.session.add(comment)
         db.session.commit()
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
 
