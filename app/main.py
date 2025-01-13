@@ -5,6 +5,8 @@ from app import app, db, bcrypt, login_manager
 from app.models import Product, User, Comment, Service, Role
 from functools import wraps
 
+ADMIN = "Admin"
+
 @app.before_request
 def create_tables():
     db.create_all()
@@ -121,7 +123,7 @@ def index():
         role = Role.query.filter(
             Role.id == current_user.role_id
         ).first()
-        is_admin = role.name == 'admin' 
+        is_admin = role.name == ADMIN
         products = Product.query.all()
         services = Service.query.all()
         return render_template('index.html', products=products, services=services, is_admin=is_admin)
@@ -150,10 +152,10 @@ def view_comments(item_type, item_id):
 
     if item_type == 'product':
         item = Product.query.get_or_404(item_id)
-        comments = Comment.query.filter_by(product_id=item_id).all()
+        comments = db.session.query(Comment, User).join(User, Comment.user_id == User.id).filter(Comment.product_id == item_id).all()
     elif item_type == 'service':
         item = Service.query.get_or_404(item_id)
-        comments = Comment.query.filter_by(service_id=item_id).all()
+        comments = db.session.query(Comment, User).join(User, Comment.user_id == User.id).filter(Comment.service_id == item_id).all()
 
     if request.method == 'POST':
         content = request.form['content']
@@ -175,9 +177,9 @@ def add_item(item_type):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index'))
     
     if request.method == 'POST':
         name = request.form['name']
@@ -189,7 +191,7 @@ def add_item(item_type):
         db.session.add(item)
         db.session.commit()
         flash(f'{item_type.capitalize()} added successfully!')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index'))
     
     return render_template('add_item.html', item_type=item_type)
 
@@ -200,7 +202,7 @@ def edit_item(item_type, item_id):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
@@ -225,7 +227,7 @@ def delete_item(item_type, item_id):
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    if current_user.role.name != 'admin':
+    if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
