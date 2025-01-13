@@ -83,7 +83,7 @@ def login():
 
             # Log la connexion
             flash('Login successful!', 'success')
-            return redirect(url_for('conversation'))
+            return redirect(url_for('index'))
         else:
             flash('Invalid username or password', 'danger')
 
@@ -95,8 +95,14 @@ def logout():
     if user_id:
         session.clear()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('login'))   
 
 @app.route('/')
+@session_login_required
 def index():
-    return redirect(url_for('index'), message="coucou")
+    current_user = session.get('username')
+    if current_user:
+        return render_template('index.html', message="t'es le plus beau")
+    else:
+        return redirect(url_for('login'))
+
