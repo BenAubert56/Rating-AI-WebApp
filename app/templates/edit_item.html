@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit {{ item_type.capitalize() }}</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_item.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('input[name="name"]');
+            textarea.focus();
+        });
+    </script>
 </head>
 <body>
     <h1>Edit {{ item_type.capitalize() }}</h1>

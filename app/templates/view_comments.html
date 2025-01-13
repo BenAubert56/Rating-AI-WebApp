@@ -4,25 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comments</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/view_comments.css') }}">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const textarea = document.querySelector('textarea[name="content"]');
+            const form = document.querySelector('form');
+
+            textarea.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    form.submit();
+                }
+            });
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    if (response.ok) {
+                        textarea.value = '';
+                        textarea.focus();
+                        // Optionally, you can reload the comments section here
+                        location.reload();
+                    }
+                });
+            });
+
+            // Scroll to the bottom of the comment section on page load
+            const commentSection = document.querySelector('.comment-section');
+            commentSection.scrollTop = commentSection.scrollHeight;
+
+            // Set focus to the textarea on page load
+            textarea.focus();
+        });
+    </script>
 </head>
 <body>
+    <a href="{{ url_for('index') }}" class="back-button">Retour</a>
     <h1>Comments for {{ item.name }}</h1>
-    <ul>
-        {% for comment, user in comments %}
-            <li>
-                {{ comment.content }} - by {{ user.username }}
-                <span class="rating">
-                    {% for _ in range(comment.rating) %}
-                        ⭐
-                    {% endfor %}
-                </span>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="comment-section">
+        <ul>
+            {% for comment, user in comments %}
+                <li>
+                    {{ comment.content }} - by {{ user.username }}
+                    <span class="rating">
+                        {% for _ in range(comment.rating) %}
+                            ⭐
+                        {% endfor %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
     <form action="{{ url_for('view_comments', item_type=item_type, item_id=item.id) }}" method="POST">
         <textarea name="content" placeholder="Leave a comment" required></textarea>
         <button type="submit">Submit</button>
     </form>
-    <a href="{{ url_for('index') }}">Back to Products and Services</a>
 </body>
 </html>
