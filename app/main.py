@@ -166,7 +166,7 @@ def view_comments(item_type, item_id):
         db.session.commit()
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
 
-    return render_template('view_comments.html', item=item, comments=comments, current_user=current_user)
+    return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
 
 @app.route('/add_item/<item_type>', methods=['GET', 'POST'])
 @session_login_required
