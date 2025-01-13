@@ -102,17 +102,11 @@ def logout():
 def index():
     current_user = session.get('username')
     if current_user:
-        return render_template('index.html', message="t'es le plus beau")
+        products = Product.query.all()
+        services = Service.query.all()
+        return render_template('products_services.html', products=products, services=services)
     else:
         return redirect(url_for('login'))
-
-
-@app.route('/products_services')
-@session_login_required
-def products_services():
-    products = Product.query.all()
-    services = Service.query.all()
-    return render_template('products_services.html', products=products, services=services)
 
 @app.route('/add_comment/<item_type>/<int:item_id>', methods=['POST'])
 @session_login_required
