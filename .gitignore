@@ -1,0 +1,18 @@
+# Ignorer les environnements virtuels
+env/
+*.env
+
+# Ignorer les flask sessions
+flask_session/
+*.flask_session
+
+# Ignorer les fichiers de cache Python
+app/__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# Ignorer les fichiers de log et de données temporaires
+*.log
+*.tmp
+.codegpt
