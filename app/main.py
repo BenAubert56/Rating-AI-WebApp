@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import jsonify, render_template, request, redirect, url_for, flash, session
 from sqlalchemy import and_, asc, or_
 from app import app, db, bcrypt, login_manager
-from app.models import Product, User, Comment, Service
+from app.models import Product, User, Comment, Service, Role
 from functools import wraps
 
 @app.before_request
@@ -41,6 +41,7 @@ def register():
         username = request.form['username']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
+        role_name = request.form['role']
 
         # Vérifier si l'utilisateur existe déjà
         existing_user = User.query.filter_by(username=username).first()
@@ -53,8 +54,13 @@ def register():
             flash('Passwords do not match. Please try again.', 'danger')
             return redirect(url_for('register'))
 
+        role = Role.query.filter_by(name=role_name).first()
+        if not role:
+            flash('Invalid role selected!')
+            return redirect(url_for('register'))
+
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(username=username, password=hashed_password)
+        new_user = User(username=username, password=hashed_password, role=role)
 
         try:
             db.session.add(new_user)
@@ -102,9 +108,18 @@ def logout():
 def index():
     current_user = session.get('username')
     if current_user:
+        user_id = session.get('user_id')
+        current_user = User.query.filter(
+                User.id == user_id
+        ).first()
+        print(current_user) 
+        role = Role.query.filter(
+            Role.id == current_user.role_id
+        ).first()
+        is_admin = role.name == 'admin' 
         products = Product.query.all()
         services = Service.query.all()
-        return render_template('products_services.html', products=products, services=services)
+        return render_template('index.html', products=products, services=services, is_admin=is_admin)
     else:
         return redirect(url_for('login'))
 
@@ -119,4 +134,30 @@ def add_comment(item_type, item_id):
         comment = Comment(content=content, user_id=user_id, service_id=item_id)
     db.session.add(comment)
     db.session.commit()
-    return redirect(url_for('products_services'))
+    return redirect(url_for('index'))
+
+@app.route('/add_product', methods=['GET', 'POST'])
+@session_login_required
+def add_product():
+    user_id = session.get('user_id')
+    current_user = User.query.filter(
+            User.id == user_id
+    ).first()
+    print(current_user) 
+    role = Role.query.filter(
+        Role.id == current_user.role_id
+    ).first()
+    if role.id != 2:
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('index'))
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        price = request.form['price']
+        product = Product(name=name, price=price)
+        db.session.add(product)
+        db.session.commit()
+        flash('Product added successfully!')
+        return redirect(url_for('index'))
+    
+    return render_template('add_products.html')

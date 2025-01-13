@@ -1,11 +1,40 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Flask</title>
+    <title>Products and Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <h1>{{ message }}</h1>
+    <h1>Products</h1>
+    <ul>
+        {% for product in products %}
+            <li>
+                {{ product.name }} - ${{ product.price }}
+                <form action="{{ url_for('add_comment', item_type='product', item_id=product.id) }}" method="POST">
+                    <textarea name="content" placeholder="Leave a comment" required></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h1>Services</h1>
+    <ul>
+        {% for service in services %}
+            <li>
+                {{ service.name }} - ${{ service.price }}
+                <form action="{{ url_for('add_comment', item_type='service', item_id=service.id) }}" method="POST">
+                    <textarea name="content" placeholder="Leave a comment" required></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% if is_admin %}
+        <button onclick="location.href='/add_product'">Add Product</button>
+    {% endif %}
 </body>
 </html>
