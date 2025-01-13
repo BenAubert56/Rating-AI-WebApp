@@ -1,9 +1,9 @@
-from datetime import datetime
-from flask import jsonify, render_template, request, redirect, url_for, flash, session
-from sqlalchemy import and_, asc, or_
+from flask import render_template, request, redirect, url_for, flash, session
 from app import app, db, bcrypt, login_manager
 from app.models import Product, User, Comment, Service, Role
 from functools import wraps
+
+from app.utils import predict_comment_rating
 
 ADMIN = "Admin"
 
@@ -130,19 +130,6 @@ def index():
     else:
         return redirect(url_for('login'))
 
-@app.route('/add_comment/<item_type>/<int:item_id>', methods=['POST'])
-@session_login_required
-def add_comment(item_type, item_id):
-    content = request.form['content']
-    user_id = 1  # Remplacez par l'ID de l'utilisateur connecté
-    if item_type == 'product':
-        comment = Comment(content=content, user_id=user_id, product_id=item_id)
-    elif item_type == 'service':
-        comment = Comment(content=content, user_id=user_id, service_id=item_id)
-    db.session.add(comment)
-    db.session.commit()
-    return redirect(url_for('index'))
-
 @app.route('/view_comments/<item_type>/<int:item_id>', methods=['GET', 'POST'])
 def view_comments(item_type, item_id):
     user_id = session.get('user_id')
@@ -159,11 +146,12 @@ def view_comments(item_type, item_id):
 
     if request.method == 'POST':
         content = request.form['content']
+        rating = predict_comment_rating(content)
         user_id = current_user.id  # Utilisateur connecté
         if item_type == 'product':
-            comment = Comment(content=content, user_id=user_id, product_id=item_id)
+            comment = Comment(content=content, rating=rating, user_id=user_id, product_id=item_id)
         elif item_type == 'service':
-            comment = Comment(content=content, user_id=user_id, service_id=item_id)
+            comment = Comment(content=content, rating=rating, user_id=user_id, service_id=item_id)
         db.session.add(comment)
         db.session.commit()
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))

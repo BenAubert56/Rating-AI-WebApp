@@ -16,3 +16,6 @@ app/__pycache__/
 *.log
 *.tmp
 .codegpt
+
+/.idea/*
+/instance/database.db
