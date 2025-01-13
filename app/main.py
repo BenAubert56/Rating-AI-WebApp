@@ -35,6 +35,10 @@ def internal_error(error):
     flash('An unexpected error occurred!', 'danger')
     return render_template('500.html'), 500
 
+@app.route('/access_denied')
+def access_denied():
+    return render_template('access_denied.html')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     roles = Role.query.all()  # Récupérer tous les rôles depuis la base de données
@@ -114,7 +118,6 @@ def index():
         current_user = User.query.filter(
                 User.id == user_id
         ).first()
-        print(current_user) 
         role = Role.query.filter(
             Role.id == current_user.role_id
         ).first()
@@ -145,13 +148,13 @@ def add_product():
     current_user = User.query.filter(
             User.id == user_id
     ).first()
-    print(current_user) 
+    
     role = Role.query.filter(
         Role.id == current_user.role_id
     ).first()
     if role.id != 2:
         flash('You do not have permission to access this page.')
-        return redirect(url_for('index'))
+        return redirect(url_for('access_denied'))
     
     if request.method == 'POST':
         name = request.form['name']
