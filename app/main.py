@@ -175,7 +175,7 @@ def add_item(item_type):
     ).first()
     if current_user.role.name != ADMIN:
         flash('You do not have permission to access this page.')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index'))
     
     if request.method == 'POST':
         name = request.form['name']
@@ -187,7 +187,7 @@ def add_item(item_type):
         db.session.add(item)
         db.session.commit()
         flash(f'{item_type.capitalize()} added successfully!')
-        return redirect(url_for('products_services'))
+        return redirect(url_for('index'))
     
     return render_template('add_item.html', item_type=item_type)
 
