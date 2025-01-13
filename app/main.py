@@ -141,32 +141,6 @@ def add_comment(item_type, item_id):
     db.session.commit()
     return redirect(url_for('index'))
 
-@app.route('/add_product', methods=['GET', 'POST'])
-@session_login_required
-def add_product():
-    user_id = session.get('user_id')
-    current_user = User.query.filter(
-            User.id == user_id
-    ).first()
-    
-    role = Role.query.filter(
-        Role.id == current_user.role_id
-    ).first()
-    if role.id != 2:
-        flash('You do not have permission to access this page.')
-        return redirect(url_for('access_denied'))
-    
-    if request.method == 'POST':
-        name = request.form['name']
-        price = request.form['price']
-        product = Product(name=name, price=price)
-        db.session.add(product)
-        db.session.commit()
-        flash('Product added successfully!')
-        return redirect(url_for('index'))
-    
-    return render_template('add_products.html')
-
 @app.route('/view_comments/<item_type>/<int:item_id>', methods=['GET', 'POST'])
 def view_comments(item_type, item_id):
     user_id = session.get('user_id')
@@ -193,3 +167,75 @@ def view_comments(item_type, item_id):
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
 
     return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
+
+
+@app.route('/add_item/<item_type>', methods=['GET', 'POST'])
+@session_login_required
+def add_item(item_type):
+    user_id = session.get('user_id')
+    current_user = User.query.filter(
+            User.id == user_id
+    ).first()
+    if current_user.role.name != 'admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('products_services'))
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        price = request.form['price']
+        if item_type == 'product':
+            item = Product(name=name, price=price)
+        elif item_type == 'service':
+            item = Service(name=name, price=price)
+        db.session.add(item)
+        db.session.commit()
+        flash(f'{item_type.capitalize()} added successfully!')
+        return redirect(url_for('products_services'))
+    
+    return render_template('add_item.html', item_type=item_type)
+
+@app.route('/edit_item/<item_type>/<int:item_id>', methods=['GET', 'POST'])
+@session_login_required
+def edit_item(item_type, item_id):
+    user_id = session.get('user_id')
+    current_user = User.query.filter(
+            User.id == user_id
+    ).first()
+    if current_user.role.name != 'admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('index'))
+    
+    if item_type == 'product':
+        item = Product.query.get_or_404(item_id)
+    elif item_type == 'service':
+        item = Service.query.get_or_404(item_id)
+    
+    if request.method == 'POST':
+        item.name = request.form['name']
+        item.price = request.form['price']
+        db.session.commit()
+        flash(f'{item_type.capitalize()} updated successfully!')
+        return redirect(url_for('index'))
+    
+    return render_template('edit_item.html', item=item, item_type=item_type)
+
+@app.route('/delete_item/<item_type>/<int:item_id>', methods=['POST'])
+@session_login_required
+def delete_item(item_type, item_id):
+    user_id = session.get('user_id')
+    current_user = User.query.filter(
+            User.id == user_id
+    ).first()
+    if current_user.role.name != 'admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('index'))
+    
+    if item_type == 'product':
+        item = Product.query.get_or_404(item_id)
+    elif item_type == 'service':
+        item = Service.query.get_or_404(item_id)
+    
+    db.session.delete(item)
+    db.session.commit()
+    flash(f'{item_type.capitalize()} deleted successfully!')
+    return redirect(url_for('index'))
