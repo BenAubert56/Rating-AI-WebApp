@@ -2,7 +2,7 @@ from datetime import datetime
 from flask import jsonify, render_template, request, redirect, url_for, flash, session
 from sqlalchemy import and_, asc, or_
 from app import app, db, bcrypt, login_manager
-from app.models import Message, User, Log
+from app.models import Product, User, Comment
 from functools import wraps
 
 @app.before_request
