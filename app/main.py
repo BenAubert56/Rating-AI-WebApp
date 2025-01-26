@@ -1,4 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from datetime import date, datetime
+from flask import json, jsonify, render_template, request, redirect, url_for, flash, session
 from app import app, db, bcrypt, login_manager
 from app.models import Product, User, Comment, Service, Role
 from functools import wraps
@@ -120,6 +121,9 @@ def index():
         current_user = User.query.filter(
                 User.id == user_id
         ).first()
+        if not current_user:
+            flash('User not found!', 'danger')
+            return redirect(url_for('login'))
         role = Role.query.filter(
             Role.id == current_user.role_id
         ).first()
@@ -133,9 +137,7 @@ def index():
 @app.route('/view_comments/<item_type>/<int:item_id>', methods=['GET', 'POST'])
 def view_comments(item_type, item_id):
     user_id = session.get('user_id')
-    current_user = User.query.filter(
-            User.id == user_id
-    ).first()
+    current_user = User.query.filter(User.id == user_id).first()
 
     if item_type == 'product':
         item = Product.query.get_or_404(item_id)
@@ -148,15 +150,17 @@ def view_comments(item_type, item_id):
         content = request.form['content']
         rating = predict_comment_rating(content)
         user_id = current_user.id  # Utilisateur connecté
+        date_posted = datetime.utcnow()
         if item_type == 'product':
-            comment = Comment(content=content, rating=rating, user_id=user_id, product_id=item_id)
+            comment = Comment(content=content, rating=rating, date_posted=date_posted, user_id=user_id, product_id=item_id)
         elif item_type == 'service':
-            comment = Comment(content=content, rating=rating, user_id=user_id, service_id=item_id)
+            comment = Comment(content=content, rating=rating, date_posted=date_posted, user_id=user_id, service_id=item_id)
         db.session.add(comment)
         db.session.commit()
+
         return redirect(url_for('view_comments', item_type=item_type, item_id=item_id))
 
-    return render_template('view_comments.html', item=item, comments=comments, item_type=item_type)
+    return render_template('view_comments.html', item=item, comments=comments, item_type=item_type, item_id=item_id)
 
 @app.route('/add_item/<item_type>', methods=['GET', 'POST'])
 @session_login_required
@@ -172,8 +176,9 @@ def add_item(item_type):
     if request.method == 'POST':
         name = request.form['name']
         price = request.form['price']
+        date_posted = datetime.utcnow()
         if item_type == 'product':
-            item = Product(name=name, price=price)
+            item = Product(name=name, price=price, date_posted=date_posted)
         elif item_type == 'service':
             item = Service(name=name, price=price)
         db.session.add(item)
@@ -212,10 +217,8 @@ def edit_item(item_type, item_id):
 @session_login_required
 def delete_item(item_type, item_id):
     user_id = session.get('user_id')
-    current_user = User.query.filter(
-            User.id == user_id
-    ).first()
-    if current_user.role.name != ADMIN:
+    current_user = User.query.filter(User.id == user_id).first()
+    if current_user.role.name != 'Admin':
         flash('You do not have permission to access this page.')
         return redirect(url_for('index'))
     
@@ -228,3 +231,77 @@ def delete_item(item_type, item_id):
     db.session.commit()
     flash(f'{item_type.capitalize()} deleted successfully!')
     return redirect(url_for('index'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@session_login_required
+def dashbord():
+    user_id = session.get('user_id')
+    current_user = User.query.filter(User.id == user_id).first()
+    if current_user.role.name != 'Admin':
+        flash('You do not have permission to access this page.')
+        return redirect(url_for('index'))
+
+    comments = db.session.query(Comment, User).join(User, Comment.user_id == User.id).all()
+    comments_with_items = []
+    for comment, user in comments:
+        if comment.product_id:
+            item = Product.query.get(comment.product_id)
+            item_type = 'product'
+        elif comment.service_id:
+            item = Service.query.get(comment.service_id)
+            item_type = 'service'
+        else:
+            item = None
+            item_type = None
+        comments_with_items.append((comment, user, item, item_type))
+
+    # Prepare data for average rating chart
+    average_rating_data = {
+        'labels': [],
+        'data': []
+    }
+    products = Product.query.all()
+    services = Service.query.all()
+    for product in products:
+        average_rating = db.session.query(db.func.avg(Comment.rating)).filter(Comment.product_id == product.id).scalar()
+        average_rating_data['labels'].append(product.name)
+        average_rating_data['data'].append(average_rating or 0)
+    for service in services:
+        average_rating = db.session.query(db.func.avg(Comment.rating)).filter(Comment.service_id == service.id).scalar()
+        average_rating_data['labels'].append(service.name)
+        average_rating_data['data'].append(average_rating or 0)
+
+    # Prepare data for average comments per day chart
+    average_comments_data = {
+        'labels': [],
+        'data': []
+    }
+    comments_per_day = db.session.query(db.func.date(Comment.date_posted), db.func.count(Comment.id)).group_by(db.func.date(Comment.date_posted)).all()
+    for comment_date, count in comments_per_day:
+        if isinstance(comment_date, date):
+            average_comments_data['labels'].append(comment_date.strftime('%Y-%m-%d'))
+        else:
+            average_comments_data['labels'].append(str(comment_date))
+        average_comments_data['data'].append(count)
+
+    # Prepare data for average rating by type chart
+    average_rating_by_type_data = {
+        'labels': ['Product', 'Service'],
+        'data': []
+    }
+    average_product_rating = db.session.query(db.func.avg(Comment.rating)).join(Product, Comment.product_id == Product.id).scalar()
+    average_service_rating = db.session.query(db.func.avg(Comment.rating)).join(Service, Comment.service_id == Service.id).scalar()
+    average_rating_by_type_data['data'].append(average_product_rating or 0)
+    average_rating_by_type_data['data'].append(average_service_rating or 0)
+
+    # Prepare data for average comments by type chart
+    average_comments_by_type_data = {
+        'labels': ['Product', 'Service'],
+        'data': []
+    }
+    average_product_comments = db.session.query(db.func.count(Comment.id)).join(Product, Comment.product_id == Product.id).scalar()
+    average_service_comments = db.session.query(db.func.count(Comment.id)).join(Service, Comment.service_id == Service.id).scalar()
+    average_comments_by_type_data['data'].append(average_product_comments / len(products) if products else 0)
+    average_comments_by_type_data['data'].append(average_service_comments / len(services) if services else 0)
+
+    return render_template('dashboard.html', comments=comments_with_items, average_rating_data=json.dumps(average_rating_data), average_comments_data=json.dumps(average_comments_data), average_rating_by_type_data=json.dumps(average_rating_by_type_data), average_comments_by_type_data=json.dumps(average_comments_by_type_data))

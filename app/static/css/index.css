@@ -82,11 +82,18 @@ button i {
     margin-right: 8px;
 }
 
+.logout-button {
+    background-color: #ff0000;
+    top: 10px;
+    position: absolute;
+    left: 10px;
+}
+
 /* Actions Admin */
 .admin-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px;
+    margin: 10px 0;
 }
 
 button.edit-button {
@@ -112,4 +119,11 @@ button.delete-button:hover {
 
 .add-button:hover {
     background-color: #e0a800;
+}
+
+.dashboard-button{
+    background-color: #007bff;
+    position: absolute;
+    right: 10px;
+    top: 10px;
 }

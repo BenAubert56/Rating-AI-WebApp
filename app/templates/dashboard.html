@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <a href="{{ url_for('index') }}" class="back-button">Retour</a>
+    <h1>Dashboard admin</h1>
+    <div class="container">
+        <div class="container1">
+            <div>
+                <p>Note moyenne par produits et services.</p>
+                <canvas id="averageRatingChart"></canvas>
+            </div>
+            <div style="margin-top: 50px;">
+                <p>Nombre de commentaires par jours.</p>
+                <canvas id="averageCommentsChart"></canvas>
+            </div>
+            <div style="margin-top: 50px;">
+                <p>Moyenne de note par type.</p>
+                <canvas id="averageRatingByTypeChart"></canvas>
+            </div>
+            <div style="margin-top: 50px;">
+                <p>Nombre moyen de commentaires par type.</p>
+                <canvas id="averageCommentsByTypeChart"></canvas>
+            </div>
+        </div>
+        <div class="container2">
+            <button type="button" class="button reload-button" onclick="window.location='/dashboard'">
+                <i class="fas fa-sync"></i> Reload Comments
+            </button>
+            <table id="commentsTable" class="display">
+                <thead>
+                    <tr>
+                        <th>Comment</th>
+                        <th>User</th>
+                        <th>Rating</th>
+                        <th>Date Posted</th>
+                        <th>Item</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for comment, user, item, item_type in comments %}
+                    <tr>
+                        <td>{{ comment.content }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ comment.rating }}</td>
+                        <td>{{ comment.date_posted }}</td>
+                        <td>
+                            {% if item_type == 'product' %}
+                                Product: {{ item.name }}
+                            {% elif item_type == 'service' %}
+                                Service: {{ item.name }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var table = $('#commentsTable').DataTable();
+            var socket = io();
+
+            socket.on('new_comment', function(comment) {
+                var itemInfo = comment.item_type === 'product' ? 'Product: ' + comment.item_name : 'Service: ' + comment.item_name;
+                table.row.add([
+                    comment.content,
+                    comment.username,
+                    comment.rating,
+                    comment.date_posted,
+                    itemInfo
+                ]).draw();
+            });
+
+            // Data for the charts
+            var averageRatingData = {{ average_rating_data | safe }};
+            var averageCommentsData = {{ average_comments_data | safe }};
+            var averageRatingByTypeData = {{ average_rating_by_type_data | safe }};
+            var averageCommentsByTypeData = {{ average_comments_by_type_data | safe }};
+
+            // Average Rating Chart
+            var ctx1 = document.getElementById('averageRatingChart').getContext('2d');
+            var averageRatingChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: averageRatingData.labels,
+                    datasets: [{
+                        label: 'Average Rating',
+                        data: averageRatingData.data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Average Comments Chart
+            var ctx2 = document.getElementById('averageCommentsChart').getContext('2d');
+            var averageCommentsChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: averageCommentsData.labels,
+                    datasets: [{
+                        label: 'Average Comments per Day',
+                        data: averageCommentsData.data,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Average Rating by Type Chart
+            var ctx3 = document.getElementById('averageRatingByTypeChart').getContext('2d');
+            var averageRatingByTypeChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: averageRatingByTypeData.labels,
+                    datasets: [{
+                        label: 'Average Rating by Type',
+                        data: averageRatingByTypeData.data,
+                        backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Average Comments by Type Chart
+            var ctx4 = document.getElementById('averageCommentsByTypeChart').getContext('2d');
+            var averageCommentsByTypeChart = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: averageCommentsByTypeData.labels,
+                    datasets: [{
+                        label: 'Average Comments by Type',
+                        data: averageCommentsByTypeData.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
