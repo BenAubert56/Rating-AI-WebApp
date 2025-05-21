@@ -1,5 +1,8 @@
 # Déploiement de notre application
 
+## Récupérer le projet sur git
+`git clone https://github.com/BenAubert56/Rating-AI-WebApp.git`
+
 ## Activation du venv
 Aller dans le workdir où l'application est stocké. Exécuter la commande pour activer l'environnement virtuel. Workdir du projet : "/Rating-AI-WebApp"
 `cd env/Scripts`
