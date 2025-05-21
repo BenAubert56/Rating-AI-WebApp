@@ -5,11 +5,11 @@
 
 ## Activation du venv
 Aller dans le workdir où l'application est stocké. Exécuter la commande pour activer l'environnement virtuel. Workdir du projet : "/Rating-AI-WebApp"
-`cd env/Scripts`
+`cd Rating-AI-WebApp.git/env/Scripts`
 `activate`
 
 Revenir au workdir
-`cd ../..`
+`cd ../../..`
 
 ## Installation des packages
 `pip install -r requirements.txt`
@@ -33,5 +33,8 @@ Faire un `Ctrl + C` dans le terminal
 
 ## Désactiver le venv
 `deactivate`
+
+## Nom du modèle
+nlptown/bert-base-multilingual-uncased-sentiment
 
 ### Fin de la procédure

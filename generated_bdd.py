@@ -15,26 +15,28 @@ USER_IDS = [1, 2, 3]  # ID des utilisateurs qui postent les commentaires
 
 # Contenu de base pour les commentaires
 COMMENTS_STARTERS = [
-    "This", "I think this", "Honestly,", "In my opinion,", "Wow!", "Well,"
+    "Ce produit", "Je pense que ce service", "Franchement,", "À mon avis,", 
+    "Waouh !", "Bon,", "Super !", "Ce service"
 ]
 COMMENTS_MIDDLE = [
-    "is amazing.", "could be better.", "exceeded my expectations.", 
-    "did not meet my expectations.", "was worth every penny.", 
-    "is not worth the price.", "is a must-buy!", "is okay for the price."
+    "est incroyable.", "pourrait être meilleur.", "a dépassé mes attentes.",
+    "n'a pas répondu à mes attentes.", "valait chaque centime.",
+    "ne vaut pas le prix.", "est un incontournable !", "est correct pour le prix."
 ]
 
 # Générer des utilisateurs par défaut
 DEFAULT_USERS = [
-    {"username": "user1", "password": "user1", "role_id": 1},
-    {"username": "user2", "password": "user2", "role_id": 1},
-    {"username": "user3", "password": "user3", "role_id": 1},
-    {"username": "val", "password": "val", "role_id": 2},
-    {"username": "kyky", "password": "kyky", "role_id": 2},
-    {"username": "ben", "password": "ben", "role_id": 2}
+    {"username": "user1", "password": "user1", "role_id": 1}, # Role user
+    {"username": "user2", "password": "user2", "role_id": 1}, # Role user
+    {"username": "user3", "password": "user3", "role_id": 1}, # Role user
+    {"username": "val", "password": "val", "role_id": 2}, # Role admin
+    {"username": "kyky", "password": "kyky", "role_id": 2}, # Role admin
+    {"username": "ben", "password": "ben", "role_id": 2} # Role admin
 ]
 
 # Générer des produits, services et assigner les commentaires aléatoires
 with app.app_context():
+    db.drop_all()  # Supprimer toutes les tables existantes
     db.create_all()
 
     # Créer les rôles
